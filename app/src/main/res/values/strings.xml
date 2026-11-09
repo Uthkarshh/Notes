@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Notes App</string>
+    <string name="shortcut_capture">Quick capture</string>
+    <string name="shortcut_voice">Voice capture</string>
+    <string name="shortcut_random">Surprise me</string>
+    <string name="widget_fact_description">Daily fact</string>
+    <string name="widget_capture_description">Capture and discover</string>
+</resources>

@@ -1,0 +1,104 @@
+
+
+1. Product ConceptBuild an offline-first personal Collection, Knowledge, and Discovery Android app designed around two core loops:Capture &amp; Organize: Quickly save actionable items and knowledge across structured lists (Movies, Books, Places, Shopping, Custom Collections) and free-form entries (Notes, Daily Facts).Resurface &amp; Discover: Combat "digital hoarding" by actively resurfacing saved content through a context-aware "Surprise Me" randomizer and a scheduled daily morning fact.Core Information ArchitectureToday (Home): Daily morning fact, quick-decisions randomizer, due reminders, in-progress items, and universal quick capture.Collections: Structured, stateful lists (Movies, Books, Places, Things to Buy, and user-created collections).Vault (Notes &amp; Facts): Free-form personal notes, reflections, and the curated facts repository.Discover: Dedicated decision engine for filtering and picking random items from collections, plus selection history.Global Utilities (Top Bar): Universal full-text search, Smart Inbox badge, and Settings.2. Core FeaturesA. CollectionsUsers can use pre-configured collection templates or define custom collections with tailored workflows.Built-in Collection Templates:Media &amp; Culture: Movies, TV Shows, Books, Articles, Games, CoursesReal World: Places, Restaurants, Things to BuyPersonal: Ideas, Custom CollectionsItem Attributes:Core Fields: Title, Description / Personal Notes, Status, Priority (Low, Medium, High, Urgent), Rating (0.5 to 5.0 stars in 0.5 increments), Favorite/Starred flag (Boolean)Timestamps: Created At, Updated At, Completed At, Reminder Date/Time, Last Selected AtRich Attachments: Local/cached Image URI, External URL, Location (Coordinates + Place Name)Type-Specific Metadata (JSON):Movies: Runtime (minutes), Release Year, Genre, Streaming ServiceBooks: Author, Page Count, ISBNPlaces: Address, Estimated Cost Tier, Opening Hours NoteShopping: Price, Target Budget, Store LinkConfigurable Lifecycle Statuses:
+Statuses represent mutually exclusive lifecycle stages and are configurable per collection. ("Favorite" and "Rewatch/Reread" are handled as flags or counters rather than statuses so users do not lose completion state.)Movies: Want to Watch -&gt; Watching -&gt; Watched / Dropped (plus a rewatchCount integer)Books: Want to Read -&gt; Reading -&gt; Finished / AbandonedPlaces: Want to Visit -&gt; Planned -&gt; Visited / ClosedThings to Buy: Considering -&gt; To Buy -&gt; Bought / PassedB. Random Selection ("Surprise Me")A prominent decision-making engine designed to eliminate choice paralysis when choosing what to watch, read, buy, or do.Quick Presets:Random Movie, Book, Place, or Item from any collectionRandom Unfinished / Unstarted itemRandom FavoriteRandom High-Priority itemGranular &amp; Context Filters:Status Filter: Exclude completed, dropped, or archived items (enabled by default).Cooldown Filter: Exclude items picked by the randomizer within the last $N$ days.Context Constraints: Filter by tags (e.g., Weekend, Family), time available (e.g., movies under 120 minutes), or budget threshold.Recency Filter: Only items added within a specific date range, or "forgotten" items added more than 90 days ago.Interactive Result Card:
+When an item is drawn, the app displays a focused action card:Accept &amp; Start: Immediately updates status to Watching, Reading, or Planned and logs the pick in selection history.Roll Again: Skips the item (temporarily suppressing it for the current session) and draws another.Quick Actions: Mark as completed, add a note, or snooze/set a reminder.C. Facts &amp; Spaced ResurfacingA dedicated micro-knowledge system for saving interesting trivia, quotes, technical snippets, and concepts.Fact Attributes:Fact Text (supports Markdown formatting)Source (Book, URL, Article, Person)Topic / Category &amp; TagsPersonal Commentary / NotesFavorite Flag &amp; Mastery Status (New, Reviewing, Learned)Impressions Counter (shownCount) &amp; lastShownAt timestampFact Actions:Add fact manually or highlight-and-share from an external browserDraw a random fact on demandMark as Favorite or Learned (reduces resurfacing frequency)Share as a formatted text snippet or rendered image cardLink fact to a related Collection Item (e.g., linking a historical fact to a Book or Place)Morning Fact Notification:Delivers a daily notification (e.g., "Your morning fact is ready") with the fact preview expandable directly in the Android notification shade.User Controls: Delivery time window, active days of the week, topic filter, source filter (personal facts only vs. starter pack), and rotation logic (prioritize unshown facts before cycling through older ones).3. App Screens &amp; UX Flow1. Today (Home Screen)The daily command center designed for fast consumption and zero-friction capture:Morning Fact Card: Displays today's selected fact with quick actions (Favorite, Share, Link Note, Next Fact)."Surprise Me" Quick Bar: Single-tap chips for [Movie], [Book], [Place], and [Anything].Up Next / In Progress: Horizontal carousel of items currently marked Watching, Reading, or Planned, plus items with reminders due within 48 hours.Smart Inbox Banner: Conditional prompt appearing only when uncategorized quick-captures exist (e.g., "5 items in Inbox need triage").Floating Action Button (FAB): Single tap opens Universal Quick Capture; long-press triggers Voice Capture.2. Collections ScreenOverview Grid/List: Shows each collection with its custom icon, accent color, total active count, and completion progress bar.Collection Detail View:Toggleable between compact List View, Poster/Cover Grid View, and Kanban Status Board.Multi-criteria sorting (Date Added, Priority, Rating, Title, Metadata fields like Runtime/Price).Filter chips by Status, Tags, and Favorites.3. Item Details ScreenFull metadata view with inline status switcher and star-rating scrubber.Linked Knowledge Section: Displays all free-form Notes and Facts linked to this item.Post-Completion Reflection Prompt: Switching an item's status to Watched, Finished, or Visited triggers an optional bottom sheet asking: "What stood out? Would you recommend it?" and saves the response as a linked Note.4. Vault (Notes &amp; Facts Screen)Segmented top toggle switching between Notes and Facts.Topic/Tag filter bar, Mastery filter (Unseen, Reviewing, Learned), and randomizer button.5. Discover ScreenInteractive filter builder ("I want a [Collection] with status [Unstarted] tagged [Weekend] taking less than [2 hours]").Animated draw card with quick status transitions.Selection History Log: Chronological feed of previously drawn items so users can revisit past suggestions.6. Settings &amp; Data ManagementMorning notification schedule and topic filters.Appearance (System, Light, Dark, AMOLED Black, Material You Dynamic Color toggle).Security (Biometric / Device Credential App Lock).Data Portability (JSON, CSV, Markdown export, and encrypted SQLite backup/restore).4. Technical ArchitectureBuilt as a modern, offline-first, single-activity Android application following Google's official architecture guidance.Language &amp; Concurrency: Kotlin + Coroutines + Flow for reactive data streams.UI Framework: Jetpack Compose with Material 3 (Dynamic Color, adaptive layouts for foldables/tablets).Navigation: Jetpack Navigation Compose (2.8+) using Kotlin Serialization for compile-time type-safe routes.Local Persistence:Room Database: Relational data, cross-references, and FTS4/FTS5 virtual tables for sub-millisecond full-text search across items, notes, and facts.Jetpack DataStore (Proto or Preferences): User settings, theme state, and notification preferences.Background Execution &amp; Scheduling:WorkManager: Daily fact rotation, database cleanup, stale-item resurfacing checks, and scheduled automated backups.AlarmManager: Exact-time user reminders (setExactAndAllowWhileIdle with graceful fallback to windowed alarms if exact alarm permission is denied on Android 12+).Dependency Injection: Dagger Hilt.Widgets: Jetpack Glance for Compose-based Home Screen widgets.Image Loading: Coil 3 for caching local URIs and optional remote cover/poster art.Plaintext+-------------------------------------------------------------------+
+|                             UI Layer                              |
+|  Jetpack Compose Screens + Glance Widgets  &lt;--&gt;  ViewModels       |
+|  (Unidirectional Data Flow: StateFlow out, UI Events in)          |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                            Domain Layer                           |
+|  Use Cases (e.g., PickRandomItemUseCase, ParseQuickCaptureUseCase,|
+|  RotateDailyFactUseCase, ExportDatabaseUseCase)                   |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                             Data Layer                            |
+|  Repositories  &lt;--&gt;  Room DAO (SQLite + FTS) &amp; Jetpack DataStore  |
+|                &lt;--&gt;  WorkManager / AlarmManager Schedulers        |
++-------------------------------------------------------------------+
+5. Relational Data Model (Room Schema)To support custom collections and rich category attributes without creating separate tables for every category, the schema pairs a core Item table with a JSON-serialized metadata column and explicit junction tables.Core EntitiesPlaintextCollectionEntity
+- id: Long (PK)
+- name: String
+- categoryType: String (MOVIE, BOOK, PLACE, BUY, CUSTOM)
+- iconName: String
+- colorHex: String
+- statusSchemaJson: String (Ordered list of valid statuses + terminal status flags)
+- sortOrder: Int
+- createdAt: Long
+
+ItemEntity
+- id: Long (PK)
+- collectionId: Long? (FK -&gt; CollectionEntity.id, NULL if in Smart Inbox)
+- title: String
+- description: String?
+- status: String
+- rating: Float? (0.5 to 5.0)
+- priority: Int (0 = None, 1 = Low, 2 = Medium, 3 = High, 4 = Urgent)
+- isFavorite: Boolean
+- isArchived: Boolean
+- metadataJson: String? (Typed JSON for runtime, author, price, coordinates, etc.)
+- imageUri: String?
+- externalUrl: String?
+- reminderAt: Long?
+- lastSelectedAt: Long?
+- selectedCount: Int
+- createdAt: Long
+- updatedAt: Long
+- completedAt: Long?
+
+FactEntity
+- id: Long (PK)
+- text: String
+- source: String?
+- topic: String?
+- personalNote: String?
+- isFavorite: Boolean
+- masteryState: String (NEW, REVIEWING, LEARNED, HIDDEN)
+- shownCount: Int
+- lastShownAt: Long?
+- createdAt: Long
+
+NoteEntity
+- id: Long (PK)
+- title: String
+- content: String (Markdown)
+- isPinned: Boolean
+- createdAt: Long
+- updatedAt: Long
+
+TagEntity
+- id: Long (PK)
+- name: String (Unique, indexed)
+- colorHex: String?
+Junction &amp; Index EntitiesPlaintextEntityTagCrossRef (Links Tags to Items, Facts, or Notes)
+- tagId: Long (FK)
+- targetId: Long
+- targetType: String (ITEM, FACT, NOTE)
+  [Composite PK: tagId, targetId, targetType]
+
+KnowledgeLinkCrossRef (Connects Notes, Facts, and Items together)
+- sourceId: Long
+- sourceType: String (ITEM, FACT, NOTE)
+- targetId: Long
+- targetType: String (ITEM, FACT, NOTE)
+- relationNote: String?
+
+SelectionHistoryEntity
+- id: Long (PK)
+- itemId: Long (FK -&gt; ItemEntity.id, ON DELETE CASCADE)
+- selectedAt: Long
+- actionTaken: String (ACCEPTED, SKIPPED, COMPLETED)
+
+SearchFtsEntity (Room @Fts4 Virtual Table)
+- rowid: Int
+- title: String
+- body: String
+- entityType: String
+- originalId: Long
+6. High-Leverage UX &amp; Differentiation FeaturesA. Universal Quick Capture &amp; Android Share Sheet IntegrationComplicated entry forms kill note-taking habits. Capture must take under three seconds from anywhere on the phone:In-App Quick Capture Bar: Typing "Watch Arrival #scifi !high" parses the prefix verb (Watch -&gt; Movies collection), hashtag (#scifi -&gt; Tag), and bang modifier (!high -&gt; Priority) automatically via lightweight local regex/heuristic rules.Smart Inbox Fallback: If the user types a raw thought without context, it saves immediately to the Inbox (collectionId = null) for later one-tap triage.System Share Target (Intent.ACTION_SEND): Registering the app in the Android Share Sheet lets users share links directly from Chrome, YouTube, Google Maps, or Goodreads. The app extracts the page title and URL and saves it to the Inbox or suggested collection in two taps.B. Voice Input &amp; Quick TileVoice Parsing: Long-pressing the FAB invokes Android's SpeechRecognizer to transcribe and parse natural phrases like "Add The Pragmatic Programmer to Books, want to read."Quick Settings Tile: An Android Notification Shade Quick Tile allows opening the Quick Capture dialog over any running app.C. Smart Views &amp; Stale Item ResurfacingDynamic Smart Views: Pre-built saved queries for Due Soon, High Priority Unfinished, Added This Month, and Quick Wins.Anti-Graveyard Resurfacing: Every week, a background worker identifies items stuck in Want to Watch or To Buy for more than 90 days and surfaces a gentle card on the Today screen: "Still interested in these 3 items, or ready to archive them?"D. Home Screen Widgets (Jetpack Glance)Daily Fact Widget: Displays the morning fact on the launcher home screen with a refresh button.Quick Capture &amp; Surprise Me Bar: A 4x1 widget with buttons for Text Capture, Voice Capture, and Random Pick.E. Privacy &amp; Data PortabilityZero-Account Local Default: All data lives on-device in SQLite with zero telemetry or mandatory sign-ups.Open Formats: Full lossless JSON backup, per-collection CSV export, and Markdown folder export for Notes and Facts using Android's Storage Access Framework (SAF).Security: Optional biometric app lock via BiometricPrompt and AES-256 encrypted backup archives via Jetpack Security.7. Phased Implementation RoadmapPhase 1: Core Local MVPRoom database setup with Collection, Item, Fact, Note, and Tag entities plus FTS4 search.Built-in collection templates with configurable statuses.Today, Collections, Vault, and Discover screens in Jetpack Compose."Surprise Me" randomizer with basic status and tag filters.Manual Quick Capture and Smart Inbox.Phase 2: Automation, Habits &amp; System IntegrationWorkManager daily morning fact notifications and AlarmManager exact item reminders.Android Share Sheet (ACTION_SEND) receiver for saving external links.Selection History log and cooldown filtering in the randomizer.Post-completion reflection prompts linking Notes to finished Items.JSON/CSV/Markdown import and export via Storage Access Framework.Phase 3: Rich Metadata &amp; Launcher PresenceTyped metadata fields (movie runtime, book author/page count, place coordinates, shopping budget) with context-aware randomizer filters.Optional opt-in metadata auto-fill using public APIs (TMDB for movies, OpenLibrary for books) with full offline fallback.Jetpack Glance Home Screen widgets and App Shortcuts.Voice capture heuristic parser.Phase 4: Sync, Security &amp; Personal InsightsBiometric app lock and encrypted automatic local/Google Drive folder backups (via SAF).Year-in-review and monthly insights dashboard (completion rates, most active tags, reading/watching streaks, forgotten backlog cleanup).
+
